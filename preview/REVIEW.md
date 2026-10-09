@@ -37,4 +37,4 @@ Move submissions to a secured shared backend with server-side validation, server
 
 ## Validation performed
 
-The dependency-free Node check parses the entire inline script and tests averages, the minimum-report rule, deterministic crowd ties, the exact expiry boundary, future-report exclusion, invalid and fractional scores, unknown venues and expiry of seeded fixtures. Browser interaction and visual testing still need the Codespace preview server to be running.
+The dependency-free Node check parses the entire inline script and tests averages, the minimum-report rule, deterministic crowd ties, the exact expiry boundary, future-report exclusion, invalid and fractional scores, unknown venues and expiry of seeded fixtures. Browser testing verified search, category filtering, sorting, venue navigation, rating submission, the minimum-report transition, repeat-submission cooldown and persistence after reload. The desktop layout was visually inspected. A private Codespace preview server is running on port 8000. Native iPhone/Android and small-screen device testing remain outstanding.
