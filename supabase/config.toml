@@ -1,0 +1,3 @@
+[functions.venue-vibes]
+# GET returns public aggregates; POST validates the user via auth.getUser.
+verify_jwt = false
