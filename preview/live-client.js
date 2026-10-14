@@ -20,7 +20,12 @@ window.VibeBackend = (() => {
     if (!response.ok) throw new Error(data.error || 'Connection failed. Please try again.');
     return data;
   }
+  let remaining=3;
+  function guestToken(){let token;try{token=localStorage.getItem('vibecheck.guest.token');if(!token){token=Array.from(crypto.getRandomValues(new Uint8Array(32))).map(x=>x.toString(16).padStart(2,'0')).join('');localStorage.setItem('vibecheck.guest.token',token);}return token;}catch{throw new Error('Enable browser storage to use guest ratings, or sign in.');}}
+  async function guestRequest(action,body={}){const response=await fetch(url+'/functions/v1/guest-vibes',{method:'POST',headers:{apikey:key,'Content-Type':'application/json'},body:JSON.stringify({...body,action,guest_token:guestToken()}),signal:AbortSignal.timeout(15000)});const data=await response.json();if(data.remaining!==undefined)remaining=data.remaining;if(data.code==='GUEST_LIMIT')remaining=0;if(!response.ok)throw new Error(data.error||'Guest checks unavailable');return data;}
   return {
+    get guestRemaining(){return remaining;},
+    checkGuest:()=>guestRequest('status'),
     snapshots: () => request('GET'),
     async signedIn() { const c = await client(); const { data, error } = await c.auth.getSession(); if (error) throw error; return !!data.session; },
     async signIn(email, password) { const c = await client(); const { error } = await c.auth.signInWithPassword({ email, password }); if (error) throw error; },
@@ -29,8 +34,9 @@ window.VibeBackend = (() => {
     async submit(body) {
       const c = await client(); const { data, error } = await c.auth.getSession();
       if (error) throw error;
-      if (!data.session) throw new Error('Sign in before sharing a vibe check.');
+      if (!data.session) return guestRequest('submit',body);
       return request('POST', body, data.session.access_token);
     }
   };
 })();
+
