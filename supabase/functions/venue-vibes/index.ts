@@ -22,7 +22,7 @@ Deno.serve(async (req: Request) => {
         'venue_id,name,suburb,category,submission_count,avg_social_vibe,avg_energy_level,current_crowd_level,last_report_at'
       ).order('name');
       if (error) return reply({ error: 'Venue snapshots are temporarily unavailable.' }, 503);
-      return reply({ venues: data, generated_at: new Date().toISOString(), window_minutes: 60, minimum_reports: 3 });
+      return reply({ venues: data, generated_at: new Date().toISOString(), window_minutes: 60, minimum_reports: 1 });
     }
     if (req.method !== 'POST') return reply({ error: 'Method not allowed.' }, 405);
     const header = req.headers.get('Authorization') || '';
