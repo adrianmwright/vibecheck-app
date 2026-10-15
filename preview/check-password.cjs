@@ -1,0 +1,7 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const html=fs.readFileSync(__dirname+'/index.html','utf8'),script=html.split('<script>')[1].split('</script>')[0];
+const password={type:'password',value:'example-only'},button={textContent:'Show',attrs:{},setAttribute(k,v){this.attrs[k]=v;}};
+const ctx=vm.createContext({document:{getElementById:id=>id==='password'?password:button}});
+vm.runInContext(script.slice(script.indexOf('function setPasswordVisible('),script.indexOf('function accountErrorMessage(')),ctx);button.onclick();assert.equal(password.type,'text');assert.equal(button.textContent,'Hide');assert.equal(button.attrs['aria-pressed'],'true');assert.equal(password.value,'example-only');button.onclick();assert.equal(password.type,'password');assert.equal(button.textContent,'Show');assert.equal(button.attrs['aria-pressed'],'false');assert.equal(password.value,'example-only');
+vm.runInContext(script.slice(script.indexOf('function accountErrorMessage('),script.indexOf("document.getElementById('resendConfirmation').onclick")),ctx);assert.match(ctx.accountErrorMessage({code:'invalid_credentials'}),/VibeCheck/);assert.match(ctx.accountErrorMessage({code:'email_not_confirmed'}),/confirm/);assert.match(ctx.accountErrorMessage({status:429}),/wait/);
+assert.match(html,/id="togglePassword" type="button"/);assert.doesNotMatch(html,/<input id="password"[^>]*minlength/);new vm.Script(script);console.log('PASS: Show/Hide preserves password, accessible toggle state, sign-in validation and recovery guidance');
