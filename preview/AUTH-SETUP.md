@@ -33,3 +33,9 @@ Official guide: https://supabase.com/docs/guides/auth/social-login/auth-apple
 Keep the Supabase backend and package the existing interface into a Capacitor iOS project, with web assets bundled in the app. Add native location/share/sign-in handling and app links. Build/sign using a Mac and Xcode, then distribute a beta through TestFlight. Complete privacy disclosures, account deletion, support/reporting, icon/screenshots and mobile testing before App Store submission. A website wrapper alone is not a guarantee of App Store acceptance.
 
 References: https://capacitorjs.com/docs/ios, https://capacitorjs.com/docs/getting-started and https://developer.apple.com/app-store/review/guidelines/.
+
+## Email password recovery
+
+Forgot password sends `resetPasswordForEmail` to the existing exact `/?auth=callback` redirect above. The SDK captures PASSWORD_RECOVERY before initial session resolution and opens the new-password form; saving calls authenticated `updateUser`. Existing signed-in members can also use Menu > Change password. Neither action requires knowing the old password. New passwords require at least eight characters and matching confirmation; the server remains authoritative.
+
+Verify Supabase Site URL and redirect allowlist (step 5) before email testing. PKCE requires requesting and opening the latest email link in the same browser/device with its storage intact. Expired or reused links need a fresh request. The app does not reveal whether an email address exists. Default email delivery limits still apply. Code-level checks cover SDK routing, recovery event detection, validation and errors; a real email roundtrip and iPhone interaction test remain required.
