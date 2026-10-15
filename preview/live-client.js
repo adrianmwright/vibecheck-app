@@ -3,10 +3,19 @@
 window.VibeBackend = (() => {
   const url = 'https://koirkuoxosuhpvfukdkl.supabase.co';
   const key = 'sb_publishable_pyUsl-vcYGpJspIT71Dn1w_zM4NVV-0';
-  let clientPromise;
+  let clientPromise, recovering = false;
+  const authListeners = new Set();
   async function client() {
     if (!clientPromise) clientPromise = import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.0/+esm')
-      .then(({ createClient }) => createClient(url, key, { auth: { detectSessionInUrl: true, flowType: 'pkce' } }))
+      .then(({ createClient }) => {
+        const c = createClient(url, key, { auth: { detectSessionInUrl: true, flowType: 'pkce' } });
+        c.auth.onAuthStateChange((event, session) => {
+          if(event === 'PASSWORD_RECOVERY') recovering = true;
+          if(event === 'SIGNED_OUT') recovering = false;
+          for(const callback of authListeners) callback(!!session && !session.user?.is_anonymous, event);
+        });
+        return c;
+      })
       .catch(error => { clientPromise = null; throw error; });
     return clientPromise;
   }
@@ -28,7 +37,10 @@ window.VibeBackend = (() => {
   return {
     providers,
     socialSignIn,
-    async onAuthChange(callback){const c=await client();return c.auth.onAuthStateChange((_event,session)=>callback(!!session&&!session.user?.is_anonymous));},
+    async onAuthChange(callback){authListeners.add(callback);await client();return {unsubscribe:()=>authListeners.delete(callback)};},
+    get recoveringPassword(){return recovering;},
+    async requestPasswordReset(email){const c=await client();const {error}=await c.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname+'?auth=callback'});if(error)throw error;},
+    async updatePassword(password){if(password.length<8)throw new Error('Choose a password with at least 8 characters.');const c=await client();const {data,error:sessionError}=await c.auth.getSession();if(sessionError)throw sessionError;if(!data.session||data.session.user?.is_anonymous)throw new Error('Your reset link has expired. Request a new reset email.');const {error}=await c.auth.updateUser({password});if(error)throw error;recovering=false;},
     get guestRemaining(){return remaining;},
     checkGuest:()=>guestRequest('status'),
     snapshots: () => request('GET'),
