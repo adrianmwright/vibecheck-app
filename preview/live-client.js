@@ -35,6 +35,7 @@ window.VibeBackend = (() => {
     async signedIn() { const c = await client(); const { data, error } = await c.auth.getSession(); if (error) throw error; return !!data.session; },
     async signIn(email, password) { const c = await client(); const { error } = await c.auth.signInWithPassword({ email, password }); if (error) throw error; },
     async signUp(email, password) { const c = await client(); const { data, error } = await c.auth.signUp({ email, password, options:{emailRedirectTo:location.origin+location.pathname+'?auth=callback'} }); if (error) throw error; return !!data.session; },
+    async resendConfirmation(email){const c=await client();const {error}=await c.auth.resend({type:'signup',email,options:{emailRedirectTo:location.origin+location.pathname+'?auth=callback'}});if(error)throw error;},
     async signOut() { const c = await client(); const { error } = await c.auth.signOut(); if (error) throw error; },
     async submit(body) {
       const c = await client(); const { data, error } = await c.auth.getSession();
