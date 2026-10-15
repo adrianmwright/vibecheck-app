@@ -6,3 +6,5 @@
 .venue-table th .sort-header{padding:3px 1px;min-height:44px;width:100%;background:transparent;color:#625874;font-size:11px;font-weight:650;text-align:center;line-height:1.35;overflow-wrap:normal}.venue-table th:first-child .sort-header{text-align:left}.venue-table th[aria-sort=ascending] .sort-header,.venue-table th[aria-sort=descending] .sort-header{color:#67318e}.venue-table th{padding-top:2px;padding-bottom:2px}.venue-table th .sort-header span{white-space:nowrap}
 
 #passwordResetForm{display:grid;gap:12px}#passwordResetForm input{width:100%;min-width:0;border:1px solid #dedbe9;padding:12px;border-radius:12px;font:inherit}#passwordResetForm .password-field input{width:100%}#forgotPassword{margin-right:12px}
+
+header a.logo{text-decoration:none;color:#24233d;min-height:44px;display:flex;align-items:center;gap:0}header a.logo:focus-visible{outline:3px solid #1884b8;border-radius:8px}.nearby-control{display:flex;align-items:center;gap:8px;margin:0 0 10px}.nearby-control p{flex:1;margin:0;font-size:11px}.nearby-control button{font-size:11px;min-height:44px;padding:8px 12px;white-space:nowrap}
