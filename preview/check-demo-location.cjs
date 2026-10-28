@@ -1,0 +1,8 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const base=__dirname+'/',nodes={};const get=id=>nodes[id]||(nodes[id]={});let requests=0,changed=0;
+const ctx=vm.createContext({window:{},document:{getElementById:get},navigator:{geolocation:{getCurrentPosition(ok){requests++;ok({coords:{latitude:-31.95,longitude:115.86,accuracy:5000}});}}}});
+vm.runInContext(fs.readFileSync(base+'nearby.js','utf8'),ctx);const api=ctx.window.VibeNearby;
+api.init(()=>changed++,{demo:true});assert.equal(requests,0);assert.equal(api.origin,null);assert.equal(api.matches([-28.13,153.49]),true);assert.equal(get('nearMe').hidden,true);assert.equal(get('retryLocation').hidden,true);assert.match(get('nearbyStatus').textContent,/Currumbin, Gold Coast/);assert.match(get('nearbyStatus').textContent,/Not your device location/);api.locate();assert.equal(requests,0);
+api.init(()=>changed++,{demo:false});assert.equal(requests,1);assert.equal(api.origin[1],115.86);assert.equal(get('nearMe').hidden,false);assert.equal(get('retryLocation').hidden,false);assert.equal(api.matches([-28.13,153.49]),false);
+api.init(()=>changed++,{demo:true});assert.equal(requests,1);assert.equal(api.origin,null);assert.equal(api.matches([-28.13,153.49]),true);
+const html=fs.readFileSync(base+'index.html','utf8');assert.match(html,/VibeNearby.init\(renderList,\{demo:!liveMode\}\)/);assert.match(fs.readFileSync(base+'venue-map.js','utf8'),/if\(demo\)origin=null/);console.log('PASS: demo ignores Perth device coordinates, requests no geolocation, shows Gold Coast sample area; live location remains enabled');
