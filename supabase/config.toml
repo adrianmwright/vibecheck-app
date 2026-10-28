@@ -4,5 +4,5 @@ verify_jwt = false
 
 [functions.guest-vibes]
 # Public trial endpoint uses a private random browser token and server-side quotas.
-# Three lifetime checks per identity and 15 minutes between submissions.
+# Three lifetime checks per identity; same venue 15 minutes, different venues 2 minutes.
 verify_jwt = false
