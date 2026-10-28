@@ -8,3 +8,5 @@
 #passwordResetForm{display:grid;gap:12px}#passwordResetForm input{width:100%;min-width:0;border:1px solid #dedbe9;padding:12px;border-radius:12px;font:inherit}#passwordResetForm .password-field input{width:100%}#forgotPassword{margin-right:12px}
 
 header a.logo{text-decoration:none;color:#24233d;min-height:44px;display:flex;align-items:center;gap:0}header a.logo:focus-visible{outline:3px solid #1884b8;border-radius:8px}.nearby-control{display:flex;align-items:center;gap:8px;margin:0 0 10px}.nearby-control p{flex:1;margin:0;font-size:11px}.nearby-control button{font-size:11px;min-height:44px;padding:8px 12px;white-space:nowrap}
+
+.search-feedback{display:flex;align-items:center;gap:10px;margin:0 0 12px}.search-feedback p{flex:1;font-size:12px;margin:0;color:#625874}.search-feedback button{white-space:nowrap;font-size:12px;min-height:44px;padding:8px 12px}
