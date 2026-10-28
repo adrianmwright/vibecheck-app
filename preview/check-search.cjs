@@ -1,0 +1,13 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const html=fs.readFileSync(__dirname+'/index.html','utf8'),script=html.split('<script>')[1].split('</script>')[0],nodes={};
+const get=id=>nodes[id]||(nodes[id]={value:id==='sort'?'name':['socialFilter','energyFilter'].includes(id)?'0':'',hidden:false,classList:{toggle(){}},style:{setProperty(){}},focus(){},blur(){}});let results,options,fits=0,notice;
+const ctx=vm.createContext({document:{getElementById:get,querySelector:()=>get('segments')},VibeNearby:{origin:[-31.95,115.86],matches:()=>false},VibeMap:{positions:{},update(list,snapshot,opts){results=list;options=opts;},fit(){fits++;}},location:{search:''},URLSearchParams,toast:m=>notice=m});
+vm.runInContext(script.split('function renderDetail()')[0]+"\nremoteReady=true;reports=[];VENUES.push({id:'V009',name:'The Loose Moose',suburb:'Broadbeach',category:'Bar',icon:'✦',tint:'#fff'});",ctx);
+vm.runInContext('renderList()',ctx);assert.equal(results.length,0);
+get('search').value=' MOOSE   Broadbeach ';vm.runInContext('renderList()',ctx);assert.equal(results.length,1);assert.equal(results[0].id,'V009');assert.equal(options.search,true);assert.equal(get('nearbyControl').hidden,true);assert.match(get('searchStatus').textContent,/1 match/);assert.doesNotMatch(get('resultcount').textContent,/within 5 km/);
+assert.equal(ctx.normalizeSearch('  CÁFÉ   CLUB  '),'cafe club');assert.equal(ctx.matchesSearch({name:'Currumbin Beach Surf Club',suburb:'Currumbin',category:'Surf club'},'surf currumbin'),true);
+vm.runInContext(script.slice(script.indexOf('function runSearch()'),script.indexOf("document.getElementById('filters').onclick=")),ctx);let prevented=false;get('searchForm').onsubmit({preventDefault(){prevented=true;}});assert.equal(prevented,true);assert.equal(fits,1);assert.match(notice,/1 match/);
+get('search').value='does-not-exist';get('searchForm').onsubmit({preventDefault(){}});assert.equal(results.length,0);assert.match(get('searchStatus').textContent,/No matches/);
+get('clearSearch').onclick();assert.equal(get('search').value,'');assert.equal(options.search,false);assert.equal(get('nearbyControl').hidden,false);assert.equal(get('searchFeedback').hidden,true);
+get('search').value='loose';for(const view of ['cards','table']){vm.runInContext("viewMode='"+view+"';renderList()",ctx);assert.match(get('venues').innerHTML,/The Loose Moose/);}
+assert.match(fs.readFileSync(__dirname+'/venue-map.js','utf8'),/nearbyOrigin&&!focusResults/);console.log('PASS: Go/Enter handler, case/accent/whitespace matching, suburb search outside 5 km, map result focus, no matches and clear-to-nearby');
