@@ -10,3 +10,5 @@
 header a.logo{text-decoration:none;color:#24233d;min-height:44px;display:flex;align-items:center;gap:0}header a.logo:focus-visible{outline:3px solid #1884b8;border-radius:8px}.nearby-control{display:flex;align-items:center;gap:8px;margin:0 0 10px}.nearby-control p{flex:1;margin:0;font-size:11px}.nearby-control button{font-size:11px;min-height:44px;padding:8px 12px;white-space:nowrap}
 
 .search-feedback{display:flex;align-items:center;gap:10px;margin:0 0 12px}.search-feedback p{flex:1;font-size:12px;margin:0;color:#625874}.search-feedback button{white-space:nowrap;font-size:12px;min-height:44px;padding:8px 12px}
+
+.rating-cooldown{padding:14px;margin:12px 0;border:1px solid #e4d9f3;border-radius:14px;background:#f3edfc;color:#67318e;text-align:center}.rating-cooldown>span{display:block;font-size:12px}.rating-cooldown strong{display:block;font-size:30px;line-height:1.4;letter-spacing:1px;font-variant-numeric:tabular-nums}.rating-cooldown p{font-size:12px;margin:4px 0 0}#ratingform button[type=submit]:disabled{opacity:.55;cursor:not-allowed}
