@@ -42,12 +42,12 @@ with recent as (
 )
 select v.id as venue_id,v.name,v.suburb,v.category,
  coalesce(t.submission_count,0) as submission_count,
- case when t.submission_count>=3 then t.social_score_total end as social_score_total,
- case when t.submission_count>=3 then t.energy_score_total end as energy_score_total,
- case when t.submission_count>=3 then round(t.social_score_total::numeric/t.submission_count,1) end as avg_social_vibe,
- case when t.submission_count>=3 then round(t.energy_score_total::numeric/t.submission_count,1) end as avg_energy_level,
- case when t.submission_count>=3 then c.crowd_level end as current_crowd_level,
- case when t.submission_count>=3 then t.last_report_at end as last_report_at
+ case when t.submission_count>=1 then t.social_score_total end as social_score_total,
+ case when t.submission_count>=1 then t.energy_score_total end as energy_score_total,
+ case when t.submission_count>=1 then round(t.social_score_total::numeric/t.submission_count,1) end as avg_social_vibe,
+ case when t.submission_count>=1 then round(t.energy_score_total::numeric/t.submission_count,1) end as avg_energy_level,
+ case when t.submission_count>=1 then c.crowd_level end as current_crowd_level,
+ case when t.submission_count>=1 then t.last_report_at end as last_report_at
 from public.venues v left join totals t on t.venue_id=v.id
 left join crowd_ranked c on c.venue_id=v.id and c.rank=1 where v.is_active;
 revoke all on public.venue_stats from public,anon,authenticated;
@@ -58,4 +58,4 @@ insert into public.venues(id,name,suburb,category) values
  ('V003','Balter Brewing Company','Currumbin Waters','Brewery'),
  ('V004','Currumbin RSL','Currumbin Waters','Club');
 comment on table public.atmosphere_reports is 'Private submissions. No browser access; use a validated server endpoint. Do not expose raw reports through Realtime.';
-comment on view public.venue_stats is 'Server-only aggregate snapshot. Excludes demo and expired reports; requires 3 reports for scores.';
+comment on view public.venue_stats is 'Server-only aggregate snapshot. Excludes demo and expired reports; first report is an early snapshot; expires after 60 minutes.';

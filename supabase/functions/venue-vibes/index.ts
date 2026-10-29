@@ -14,15 +14,24 @@ const reply = (body: unknown, status = 200) => new Response(JSON.stringify(body)
 
 // Platform JWT check is off because GET is public. Every POST independently
 // validates a real, confirmed user with Supabase Auth; an API key is insufficient.
+function cooldownResponse(error:{message:string;details?:string}) {
+ const same=error.message.includes('COOLDOWN_SAME_VENUE');
+ const maximum=same?900:120;
+ const raw=Number(error.details);
+ const seconds=Number.isFinite(raw)&&raw>0?Math.min(maximum,Math.ceil(raw)):maximum;
+ const wait=seconds>=60?Math.floor(seconds/60)+'m'+(seconds%60?' '+seconds%60+'s':''):seconds+'s';
+ return {error:(same?'You can rate the same venue once every 15 minutes.':'Please leave 2 minutes between ratings at different venues.')+' Try again in '+wait+'.',code:same?'COOLDOWN_SAME_VENUE':'COOLDOWN_DIFFERENT_VENUE',retry_after_seconds:seconds};
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
   try {
     if (req.method === 'GET') {
       const { data, error } = await admin.from('venue_stats').select(
-        'venue_id,name,suburb,category,submission_count,avg_social_vibe,avg_energy_level,current_crowd_level,last_report_at'
+        'venue_id,name,suburb,category,submission_count,avg_social_vibe,avg_energy_level,current_crowd_level,last_report_at,latitude,longitude'
       ).order('name');
       if (error) return reply({ error: 'Venue snapshots are temporarily unavailable.' }, 503);
-      return reply({ venues: data, generated_at: new Date().toISOString(), window_minutes: 60, minimum_reports: 3 });
+      return reply({ venues: data, generated_at: new Date().toISOString(), window_minutes: 60, minimum_reports: 1 });
     }
     if (req.method !== 'POST') return reply({ error: 'Method not allowed.' }, 405);
     const header = req.headers.get('Authorization') || '';
@@ -49,7 +58,7 @@ Deno.serve(async (req: Request) => {
       p_social_vibe: body.social_vibe, p_energy_level: body.energy_level
     });
     if (error) {
-      if (error.message.includes('COOLDOWN')) return reply({ error: 'You have already checked this venue. Try again after 15 minutes.' }, 429);
+      if (error.message.includes('COOLDOWN')) return reply(cooldownResponse(error),429);
       if (error.message.includes('HOURLY_LIMIT')) return reply({ error: 'You have reached the hourly limit. Try again later.' }, 429);
       if (error.message.includes('VENUE_UNAVAILABLE')) return reply({ error: 'This venue is unavailable.' }, 400);
       return reply({ error: 'Your vibe check could not be saved. Please try again.' }, 503);
@@ -59,3 +68,4 @@ Deno.serve(async (req: Request) => {
     return reply({ error: 'Something went wrong. Please try again.' }, 503);
   }
 });
+
