@@ -19,6 +19,7 @@ window.VibeBackend = (() => {
       .catch(error => { clientPromise = null; throw error; });
     return clientPromise;
   }
+  function responseError(data,fallback){const error=new Error(data.error||fallback);error.code=data.code;if(typeof data.retry_after_seconds==='number'&&Number.isFinite(data.retry_after_seconds))error.retryAfterSeconds=data.retry_after_seconds;return error;}
   async function request(method, body, token) {
     const response = await fetch(url + '/functions/v1/venue-vibes', {
       method, headers: { apikey: key, ...(body ? { 'Content-Type': 'application/json' } : {}),
@@ -26,14 +27,14 @@ window.VibeBackend = (() => {
       ...(body ? { body: JSON.stringify(body) } : {}), signal: AbortSignal.timeout(15000)
     });
     const data = await response.json();
-    if (!response.ok) throw new Error(data.error || 'Connection failed. Please try again.');
+    if (!response.ok) throw responseError(data,'Connection failed. Please try again.');
     return data;
   }
   async function providers(){const response=await fetch(url+'/auth/v1/settings',{headers:{apikey:key},signal:AbortSignal.timeout(15000)});if(!response.ok)throw new Error('Sign-in options are temporarily unavailable.');const settings=await response.json();return {google:settings.external?.google===true,apple:settings.external?.apple===true};}
   async function socialSignIn(provider){if(!['google','apple'].includes(provider))throw new Error('Unsupported sign-in method.');const enabled=await providers();if(!enabled[provider])throw new Error('This sign-in option is coming soon. Please use email for now.');try{sessionStorage.setItem('vibecheck.auth.return',/^#venue=[A-Za-z0-9_-]{1,64}$/.test(location.hash)?location.hash:'');}catch{}const c=await client();const {error}=await c.auth.signInWithOAuth({provider,options:{redirectTo:location.origin+location.pathname+'?auth=callback'}});if(error)throw error;}
   let remaining=3;
   function guestToken(){let token;try{token=localStorage.getItem('vibecheck.guest.token');if(!token){token=Array.from(crypto.getRandomValues(new Uint8Array(32))).map(x=>x.toString(16).padStart(2,'0')).join('');localStorage.setItem('vibecheck.guest.token',token);}return token;}catch{throw new Error('Enable browser storage to use guest ratings, or sign in.');}}
-  async function guestRequest(action,body={}){const response=await fetch(url+'/functions/v1/guest-vibes',{method:'POST',headers:{apikey:key,'Content-Type':'application/json'},body:JSON.stringify({...body,action,guest_token:guestToken()}),signal:AbortSignal.timeout(15000)});const data=await response.json();if(data.remaining!==undefined)remaining=data.remaining;if(data.code==='GUEST_LIMIT')remaining=0;if(!response.ok)throw new Error(data.error||'Guest checks unavailable');return data;}
+  async function guestRequest(action,body={}){const response=await fetch(url+'/functions/v1/guest-vibes',{method:'POST',headers:{apikey:key,'Content-Type':'application/json'},body:JSON.stringify({...body,action,guest_token:guestToken()}),signal:AbortSignal.timeout(15000)});const data=await response.json();if(data.remaining!==undefined)remaining=data.remaining;if(data.code==='GUEST_LIMIT')remaining=0;if(!response.ok)throw responseError(data,'Guest checks unavailable');return data;}
   return {
     providers,
     socialSignIn,
